@@ -44,16 +44,16 @@ class ArLibsCommand : BaseCommand() {
             "&6╔═════════════════════════════════╗",
             "&6║        &eArLibs Framework &bv$version        &6║",
             "&6╠═════════════════════════════════╣",
-            "&6║ &7Author(s): &e$authors",
-            "&6║ &7A powerful library for Bukkit plugins",
+            "&6║ &7${getLocalizedMessage("command.version.author", mapOf("author" to authors), fallback = "Author(s)")}",
+            "&6║ &7${getLocalizedMessage("command.version.description", fallback = "A powerful library for Bukkit plugins")}",
             "&6║",
-            "&6║ &7Features:",
-            "&6║ &a• &7Annotation-based command system",
-            "&6║ &a• &7Advanced configuration management",
-            "&6║ &a• &7Color processing utilities",
-            "&6║ &a• &7Enhanced logging system",
+            "&6║ &7${getLocalizedMessage("command.features.title", fallback = "Features")}:",
+            "&6║ &a• &7${getLocalizedMessage("command.features.commands", fallback = "Annotation-based command system")}",
+            "&6║ &a• &7${getLocalizedMessage("command.features.config", fallback = "Advanced configuration management")}",
+            "&6║ &a• &7${getLocalizedMessage("command.features.colors", fallback = "Color processing utilities")}",
+            "&6║ &a• &7${getLocalizedMessage("command.features.logging", fallback = "Enhanced logging system")}",
             "&6║",
-            "&6║ &7Use &e/arlibs help &7for available commands",
+            "&6║ &7${getLocalizedMessage("command.help.usage", fallback = "Use /arlibs help for available commands")}",
             "&6╚═════════════════════════════════╝",
             ""
         )
@@ -74,14 +74,13 @@ class ArLibsCommand : BaseCommand() {
             ?: return sendError("Could not load help information.").let { CommandResult.ERROR }
 
         if (context.args.isEmpty()) {
-            val messages = mutableListOf(
-                "&6=== &eArLibs Help &6===",
-                "&7Available commands:",
+            val messages = mutableListOf<String>()
+            
+            messages.addAll(listOf(
+                getLocalizedMessage("help.title", fallback = "&6=== &eArLibs Help &6==="),
+                getLocalizedMessage("help.available_commands", fallback = "&7Available commands:"),
                 ""
-            )
-
-            // Main command
-            messages.add("&e${mainCommandInfo.usage} &7- ${mainCommandInfo.description}")
+            ))
 
             // Subcommands (sorted alphabetically)
             mainCommandInfo.subCommands.values
@@ -90,13 +89,15 @@ class ArLibsCommand : BaseCommand() {
                 .filter { context.hasPermission(it.permission) }
                 .forEach { subCmd ->
                     val usage = subCmd.usage.ifEmpty { "/${mainCommandInfo.name} ${subCmd.name}" }
-                    val description = subCmd.description.ifEmpty { "No description available." }
+                    val description = getLocalizedMessage("help.subcommand.${subCmd.name}", 
+                        fallback = subCmd.description.ifEmpty { "No description available." })
                     messages.add("&e$usage &7- $description")
                 }
 
             messages.addAll(listOf(
                 "",
-                "&7Use &e/arlibs help <subcommand_name> &7for specific help."
+                getLocalizedMessage("help.specific_help", 
+                    fallback = "&7Use &e/arlibs help <subcommand_name> &7for specific help.")
             ))
 
             send(*messages.toTypedArray())
@@ -115,11 +116,21 @@ class ArLibsCommand : BaseCommand() {
             }
 
             send(
-                "&6Help: &e${subCommandInfo.usage.ifEmpty { "/${mainCommandInfo.name} ${subCommandInfo.name}" }}",
-                "&7Description: &f${subCommandInfo.description.ifEmpty { "No description available." }}",
-                if (subCommandInfo.aliases.isNotEmpty()) "&7Aliases: &f${subCommandInfo.aliases.joinToString(", ")}" else null,
-                "&7Permission: &f${subCommandInfo.permission}",
-                "&7Executor: &f$effectiveExecutor"
+                getLocalizedMessage("help.command_title", 
+                    mapOf("command" to (subCommandInfo.usage.ifEmpty { "/${mainCommandInfo.name} ${subCommandInfo.name}" })),
+                    fallback = "&6Help: &e${subCommandInfo.usage.ifEmpty { "/${mainCommandInfo.name} ${subCommandInfo.name}" }}"),
+                getLocalizedMessage("help.description", 
+                    mapOf("description" to (subCommandInfo.description.ifEmpty { getLocalizedMessage("help.no_description", fallback = "No description available.") })),
+                    fallback = "&7Description: &f${subCommandInfo.description.ifEmpty { "No description available." }}"),
+                if (subCommandInfo.aliases.isNotEmpty()) getLocalizedMessage("help.aliases", 
+                    mapOf("aliases" to subCommandInfo.aliases.joinToString(", ")),
+                    fallback = "&7Aliases: &f${subCommandInfo.aliases.joinToString(", ")}") else null,
+                getLocalizedMessage("help.permission", 
+                    mapOf("permission" to subCommandInfo.permission),
+                    fallback = "&7Permission: &f${subCommandInfo.permission}"),
+                getLocalizedMessage("help.executor", 
+                    mapOf("executor" to effectiveExecutor.toString()),
+                    fallback = "&7Executor: &f$effectiveExecutor")
             )
         }
         return CommandResult.SUCCESS
@@ -144,38 +155,44 @@ class ArLibsCommand : BaseCommand() {
             .eachCount()
         
         val messages = mutableListOf(
-            "&6=== &eArLibs System Information &6===",
+            getLocalizedMessage("command.about.title", fallback = "&6=== &eArLibs System Information &6==="),
             "",
-            "&6Plugin Information:",
-            "&7• Version: &e$version",
-            "&7• Authors: &e${plugin.pluginMeta.authors.joinToString(", ")}",
-            "&7• Description: &e${plugin.pluginMeta.description ?: "A powerful library for Bukkit plugins"}",
+            getLocalizedMessage("command.about.plugin_info", fallback = "&6Plugin Information:"),
+            getLocalizedMessage("command.about.version", mapOf("version" to version), fallback = "&7• Version: &e$version"),
+            getLocalizedMessage("command.about.authors", mapOf("authors" to plugin.pluginMeta.authors.joinToString(", ")), fallback = "&7• Authors: &e${plugin.pluginMeta.authors.joinToString(", ")}"),
+            getLocalizedMessage("command.about.description", mapOf("description" to (plugin.pluginMeta.description ?: "A powerful library for Bukkit plugins")), fallback = "&7• Description: &e${plugin.pluginMeta.description ?: "A powerful library for Bukkit plugins"}"),
             "",
-            "&6Server Information:",
-            "&7• Server: &e${server.name} ${server.version}",
-            "&7• Bukkit Version: &e${server.bukkitVersion}",
-            "&7• Online Players: &e${server.onlinePlayers.size}/${server.maxPlayers}",
+            getLocalizedMessage("command.about.server_info", fallback = "&6Server Information:"),
+            getLocalizedMessage("command.about.server", mapOf("server" to "${server.name} ${server.version}"), fallback = "&7• Server: &e${server.name} ${server.version}"),
+            getLocalizedMessage("command.about.bukkit_version", mapOf("version" to server.bukkitVersion), fallback = "&7• Bukkit Version: &e${server.bukkitVersion}"),
+            getLocalizedMessage("command.about.online_players", mapOf("online" to server.onlinePlayers.size.toString(), "max" to server.maxPlayers.toString()), fallback = "&7• Online Players: &e${server.onlinePlayers.size}/${server.maxPlayers}"),
             "",
-            "&6Command System:",
-            "&7• Total Registered Commands: &e${allCommands.size}",
-            "&7• Commands by Plugin:"
+            getLocalizedMessage("command.about.command_system", fallback = "&6Command System:"),
+            getLocalizedMessage("command.about.total_commands", mapOf("count" to allCommands.size.toString()), fallback = "&7• Total Registered Commands: &e${allCommands.size}"),
+            getLocalizedMessage("command.about.commands_by_plugin", fallback = "&7• Commands by Plugin:")
         )
 
         pluginCommandCounts.toList().sortedByDescending { it.second }.forEach { (pluginName, count) ->
-            messages.add("&7  - &e$pluginName&7: &a$count command(s)")
+            messages.add(getLocalizedMessage("command.about.plugin_command_count", 
+                mapOf("plugin" to pluginName, "count" to count.toString()), 
+                fallback = "&7  - &e$pluginName&7: &a$count command(s)"))
         }
         
         messages.add("")
-        messages.add("&6Configuration Status:")
+        messages.add(getLocalizedMessage("command.about.config_status", fallback = "&6Configuration Status:"))
         
         try {
             val coreConfig = ConfigManager.getConfig(CoreConfig::class)
             messages.addAll(listOf(
-                "&7• Debug Mode: &e${if (coreConfig?.debug == true) "Enabled" else "Disabled"}",
-                "&7• Config Loaded: &aSuccessfully"
+                getLocalizedMessage("command.about.debug_mode", 
+                    mapOf("status" to if (coreConfig?.debug == true) "Enabled" else "Disabled"), 
+                    fallback = "&7• Debug Mode: &e${if (coreConfig?.debug == true) "Enabled" else "Disabled"}"),
+                getLocalizedMessage("command.about.config_loaded", fallback = "&7• Config Loaded: &aSuccessfully")
             ))
         } catch (e: Exception) {
-            messages.add("&7• Config Status: &cError - ${e.message}")
+            messages.add(getLocalizedMessage("command.about.config_error", 
+                mapOf("error" to (e.message ?: "Unknown error")), 
+                fallback = "&7• Config Status: &cError - ${e.message}"))
         }
         
         send(*messages.toTypedArray())
@@ -196,7 +213,7 @@ class ArLibsCommand : BaseCommand() {
         val allCommands = CommandAPI.getAllCommands()
         
         if (allCommands.isEmpty()) {
-            return sendWarning("No commands are currently registered through ArLibs").let { CommandResult.SUCCESS }
+            return sendLocalizedWarning("command.commands.no_commands", fallbackMessage = "No commands are currently registered through ArLibs").let { CommandResult.SUCCESS }
         }
         
         val filterPlugin = context.getArg(0)
@@ -207,18 +224,25 @@ class ArLibsCommand : BaseCommand() {
         }
         
         if (filteredCommands.isEmpty()) {
-            return sendError("No commands found for plugin: $filterPlugin").let { CommandResult.ERROR }
+            return sendLocalizedError("command.commands.no_commands_for_plugin", 
+                mapOf("plugin" to (filterPlugin ?: "")), 
+                fallbackMessage = "No commands found for plugin: $filterPlugin").let { CommandResult.ERROR }
         }
         
         val title = if (filterPlugin != null) {
-            "&6=== &eCommands for $filterPlugin &6==="
+            getLocalizedMessage("command.commands.title_for_plugin", 
+                mapOf("plugin" to filterPlugin), 
+                fallback = "&6=== &eCommands for $filterPlugin &6===")
         } else {
-            "&6=== &eAll Registered Commands &6==="
+            getLocalizedMessage("command.commands.title_all", 
+                fallback = "&6=== &eAll Registered Commands &6===")
         }
         
         val messages = mutableListOf(
             title,
-            "&7Total: &e${filteredCommands.size} command(s)",
+            getLocalizedMessage("command.commands.total", 
+                mapOf("count" to filteredCommands.size.toString()), 
+                fallback = "&7Total: &e${filteredCommands.size} command(s)"),
             ""
         )
         
@@ -250,23 +274,26 @@ class ArLibsCommand : BaseCommand() {
     )
     @Permission("arlibs.command.reload", defaultValue = PermissionDefault.OP)
     fun reloadCommand(context: CommandContext): CommandResult {
-        send("&7Reloading ArLibs configuration...")
+        sendLocalized("general.reloading", fallbackMessage = "&7Reloading ArLibs configuration...")
         
         return try {
             ConfigManager.reloadConfig(CoreConfig::class)
+            ConfigManager.reloadConfig(com.arteam.arLibs.language.LanguageConfig::class)
             val coreConfig = ConfigManager.getConfig(CoreConfig::class)
 
-            
-            send(
-                "&aArLibs configuration reloaded successfully!",
-                "&7Debug Mode: &e${if (coreConfig?.debug == true) "Enabled" else "Disabled"}"
-            )
+            sendLocalizedSuccess("command.reload.success", 
+                fallbackMessage = "&aArLibs configuration reloaded successfully!")
+            sendLocalized("command.reload.debug_mode",
+                mapOf("debug_status" to if (coreConfig?.debug == true) "Enabled" else "Disabled"),
+                fallbackMessage = "&7Debug Mode: &e${if (coreConfig?.debug == true) "Enabled" else "Disabled"}")
             
             Logger.info("Configuration reloaded by ${context.sender.name}")
             CommandResult.SUCCESS
             
         } catch (e: Exception) {
-            sendError("Failed to reload configuration: ${e.message}")
+            sendLocalizedError("errors.config_load", 
+                mapOf("error" to (e.message ?: "Unknown error")),
+                fallbackMessage = "Failed to reload configuration: ${e.message}")
             Logger.severe("Failed to reload configuration: ${e.message}")
             CommandResult.ERROR
         }
@@ -290,18 +317,18 @@ class ArLibsCommand : BaseCommand() {
             coreConfig?.debug = newDebugState
             ConfigManager.saveConfig(CoreConfig::class)
             
-            val statusMessage = if (newDebugState) "&aEnabled" else "&cDisabled"
+            val statusKey = if (newDebugState) "command.debug.enabled" else "command.debug.disabled"
             
-            send(
-                "&aDebug mode $statusMessage",
-                "&7Debug logging is now ${if (newDebugState) "enabled" else "disabled"}"
-            )
+            sendLocalizedSuccess(statusKey, 
+                fallbackMessage = if (newDebugState) "&aDebug mode enabled" else "&cDebug mode disabled")
             
             Logger.info("Debug mode ${if (newDebugState) "enabled" else "disabled"} by ${context.sender.name}")
             CommandResult.SUCCESS
             
         } catch (e: Exception) {
-            sendError("Failed to toggle debug mode: ${e.message}")
+            sendLocalizedError("errors.config_save", 
+                mapOf("error" to (e.message ?: "Unknown error")),
+                fallbackMessage = "Failed to toggle debug mode: ${e.message}")
             CommandResult.ERROR
         }
     }
@@ -321,20 +348,20 @@ class ArLibsCommand : BaseCommand() {
         val authors = plugin.pluginMeta.authors.joinToString(", ")
         
         val messages = mutableListOf(
-            "&6ArLibs Framework",
-            "&7Version: &e$version",
-            "&7Authors: &e$authors",
-            "&7Built for: &eBukkit/Spigot/Paper",
-            "&7API Version: &e${plugin.pluginMeta.apiVersion ?: "Legacy"}"
+            getLocalizedMessage("command.version.title", fallback = "&6ArLibs Framework"),
+            getLocalizedMessage("command.version.version", mapOf("version" to version), fallback = "&7Version: &e$version"),
+            getLocalizedMessage("command.version.author", mapOf("author" to authors), fallback = "&7Author(s): &e$authors"),
+            getLocalizedMessage("command.version.built_for", fallback = "&7Built for: &eBukkit/Spigot/Paper"),
+            getLocalizedMessage("command.version.api_version", mapOf("version" to (plugin.pluginMeta.apiVersion ?: "Legacy")), fallback = "&7API Version: &e${plugin.pluginMeta.apiVersion ?: "Legacy"}")
         )
         
         if (context.hasPermission("arlibs.command.debug")) {
             messages.addAll(listOf(
                 "",
-                "&7Debug Information:",
-                "&7• Plugin File: &e${plugin.dataFolder.parent}/${plugin.pluginMeta.name}.jar",
-                "&7• Data Folder: &e${plugin.dataFolder.absolutePath}",
-                "&7• Loaded: &e${if (plugin.isEnabled) "Yes" else "No"}"
+                getLocalizedMessage("command.version.debug_info", fallback = "&7Debug Information:"),
+                getLocalizedMessage("command.version.plugin_file", mapOf("file" to "${plugin.dataFolder.parent}/${plugin.pluginMeta.name}.jar"), fallback = "&7• Plugin File: &e${plugin.dataFolder.parent}/${plugin.pluginMeta.name}.jar"),
+                getLocalizedMessage("command.version.data_folder", mapOf("folder" to plugin.dataFolder.absolutePath), fallback = "&7• Data Folder: &e${plugin.dataFolder.absolutePath}"),
+                getLocalizedMessage("command.version.loaded", mapOf("status" to if (plugin.isEnabled) "Yes" else "No"), fallback = "&7• Loaded: &e${if (plugin.isEnabled) "Yes" else "No"}")
             ))
         }
         
@@ -350,28 +377,36 @@ class ArLibsCommand : BaseCommand() {
         name = "action",
         aliases = ["act"],
         description = "Execute action expressions directly",
-        minArgs = 1,
+        minArgs = 0,
         executor = CommandExecutor.PLAYER
     )
     @Permission("arlibs.command.action", defaultValue = PermissionDefault.OP)
     fun actionCommand(context: CommandContext): CommandResult {
-        val actionExpression = context.args.joinToString(" ").trim()
-        val player = context.getPlayer()
+        if (context.args.isEmpty()) {
+            showActionHelp()
+            return CommandResult.SUCCESS
+        }
         
-        send("&6Executing action: &e$actionExpression")
+        val actionExpression = context.args.joinToString(" ").trim()
+        val player = getPlayer()
+        
+        sendLocalized("command.action.executing", mapOf("expression" to actionExpression), 
+            fallbackMessage = "&6Executing action: &e$actionExpression")
         
         return try {
             val job = com.arteam.arLibs.action.ActionAPI.executeAction(player, actionExpression)
             if (job != null) {
-                sendSuccess("Action executed successfully")
+                sendLocalizedSuccess("command.action.success", fallbackMessage = "Action executed successfully")
                 CommandResult.SUCCESS
             } else {
-                sendError("Failed to parse action expression")
+                sendLocalizedError("command.action.parse_error", fallbackMessage = "Failed to parse action expression")
                 showActionHelp()
                 CommandResult.ERROR
             }
         } catch (e: Exception) {
-            sendError("Failed to execute action: ${e.message}")
+            sendLocalizedError("command.action.execution_error", 
+                mapOf("error" to (e.message ?: "Unknown error")),
+                fallbackMessage = "Failed to execute action: ${e.message}")
             showActionHelp()
             CommandResult.ERROR
         }
@@ -385,19 +420,25 @@ class ArLibsCommand : BaseCommand() {
         name = "condition",
         aliases = ["cond", "conditions"],
         description = "Evaluate condition expressions directly",
-        minArgs = 1,
+        minArgs = 0,
         executor = CommandExecutor.PLAYER
     )
     @Permission("arlibs.command.condition", defaultValue = PermissionDefault.OP)
     fun conditionCommand(context: CommandContext): CommandResult {
+        if (context.args.isEmpty()) {
+            showConditionHelp()
+            return CommandResult.SUCCESS
+        }
         val conditionExpression = context.args.joinToString(" ").trim()
-        val player = context.getPlayer()
+        val player = getPlayer()
         
-        send("&6Evaluating condition: &e$conditionExpression")
+        sendLocalized("command.condition.evaluating", mapOf("expression" to conditionExpression), 
+            fallbackMessage = "&6Evaluating condition: &e$conditionExpression")
         
         return try {
             if (!com.arteam.arLibs.condition.ConditionManager.isValidExpression(conditionExpression)) {
-                sendError("Invalid condition syntax")
+                sendLocalizedError("command.condition.invalid_syntax", 
+                    fallbackMessage = "Invalid condition syntax")
                 showConditionHelp()
                 return CommandResult.ERROR
             }
@@ -405,41 +446,45 @@ class ArLibsCommand : BaseCommand() {
             val result = com.arteam.arLibs.condition.ConditionManager.evaluate(player, conditionExpression)
             
             if (result) {
-                sendSuccess("Condition evaluated to: &atrue")
+                sendLocalizedSuccess("command.condition.result_true", 
+                    fallbackMessage = "Condition evaluated to: &atrue")
             } else {
-                send("&6Condition evaluated to: &cfalse")
+                sendLocalized("command.condition.result_false", 
+                    fallbackMessage = "&6Condition evaluated to: &cfalse")
             }
             CommandResult.SUCCESS
             
         } catch (e: Exception) {
-            sendError("Error evaluating condition: ${e.message}")
+            sendLocalizedError("command.condition.evaluation_error", 
+                mapOf("error" to (e.message ?: "Unknown error")),
+                fallbackMessage = "Error evaluating condition: ${e.message}")
             showConditionHelp()
             CommandResult.ERROR
         }
     }
 
     private fun showActionHelp() {
-        send(
-            "&7Supported formats:",
-            "&7• tell <message>",
-            "&7• sound <sound>-<volume>-<pitch>",
-            "&7• if {condition} then {actions} [else {actions}]",
-            "&7• delay <ticks>",
-            "&7• command <command>",
-            "&7• console <command>",
-            "&7• actionbar <message>",
-            "&7• title `<title>` `<subtitle>` <fadeIn> <stay> <fadeOut>"
+        sendLocalized(
+            "command.action.help.title" to "&7Supported formats:",
+            "command.action.help.tell" to "&7• tell <message>",
+            "command.action.help.sound" to "&7• sound <sound>-<volume>-<pitch>",
+            "command.action.help.if" to "&7• if {condition} then {actions} [else {actions}]",
+            "command.action.help.delay" to "&7• delay <ticks>",
+            "command.action.help.command" to "&7• command <command>",
+            "command.action.help.console" to "&7• console <command>",
+            "command.action.help.actionbar" to "&7• actionbar <message>",
+            "command.action.help.title_format" to "&7• title `<title>` `<subtitle>` <fadeIn> <stay> <fadeOut>"
         )
     }
 
     private fun showConditionHelp() {
-        send(
-            "&7Supported formats:",
-            "&7• permission <node>",
-            "&7• papi <placeholder> [operator] [value]",
-            "&7• any [condition1; condition2; ...]",
-            "&7• all [condition1; condition2; ...]",
-            "&7• not <condition>"
+        sendLocalized(
+            "command.condition.help.title" to "&7Supported formats:",
+            "command.condition.help.permission" to "&7• permission <node>",
+            "command.condition.help.papi" to "&7• papi <placeholder> [operator] [value]",
+            "command.condition.help.any" to "&7• any [condition1; condition2; ...]",
+            "command.condition.help.all" to "&7• all [condition1; condition2; ...]",
+            "command.condition.help.not" to "&7• not <condition>"
         )
     }
 
@@ -472,5 +517,45 @@ class ArLibsCommand : BaseCommand() {
         val subCommands = listOf("help", "info", "commands", "reload", "debug", "version", "action", "condition")
         val input = context.args.lastOrNull() ?: ""
         return subCommands.filter { it.startsWith(input, ignoreCase = true) }
+    }
+
+    // Helper methods to reduce code duplication / 辅助方法以减少代码重复
+    
+    /**
+     * Validates command arguments and shows usage if invalid.
+     * 验证命令参数，如果无效则显示用法。
+     *
+     * @param context The command context.
+     *                命令上下文。
+     * @param minArgs The minimum number of arguments required.
+     *                所需的最小参数数量。
+     * @param maxArgs The maximum number of arguments allowed.
+     *                允许的最大参数数量。
+     * @return true if arguments are valid, false otherwise.
+     *         如果参数有效则返回true，否则返回false。
+     */
+    private fun validateArgs(context: CommandContext, minArgs: Int, maxArgs: Int = Int.MAX_VALUE): Boolean {
+        if (!validateArgCount(minArgs, maxArgs)) {
+            sendLocalizedError("command.invalid_usage", fallbackMessage = "Invalid number of arguments")
+            return false
+        }
+        return true
+    }
+    
+    /**
+     * Shows a formatted help section.
+     * 显示格式化的帮助部分。
+     *
+     * @param title The section title.
+     *              部分标题。
+     * @param items The help items to display.
+     *              要显示的帮助项。
+     */
+    private fun showHelpSection(title: String, vararg items: String) {
+        send(
+            "&6=== &e$title &6===",
+            *items,
+            ""
+        )
     }
 } 

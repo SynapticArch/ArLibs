@@ -1,0 +1,287 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# ArLibs 开发模式与最佳实践
+
+本指南介绍在 ArLibs 框架中开发时应遵循的模式和最佳实践。
+
+## 注解驱动开发
+
+### Command 开发模式
+ArLibs 使用注解驱动的命令系统，遵循以下模式：
+
+```kotlin
+@Command(name = "example", description = "示例命令")
+class ExampleCommand : BaseCommand() {
+    
+    // 主命令逻辑
+    override fun execute(context: CommandContext): CommandResult {
+        return CommandResult.SUCCESS
+    }
+    
+    // 子命令使用方法注解
+    @SubCommand(name = "test")
+    @Permission("plugin.test")
+    fun testSubCommand(context: CommandContext): CommandResult {
+        return CommandResult.SUCCESS
+    }
+    
+    // Tab补全
+    @TabComplete(subCommand = "test", argument = 0)
+    fun testTabComplete(context: CommandContext): List<String> {
+        return listOf("option1", "option2")
+    }
+}
+```
+
+**参考实现**: [ArLibsCommand.kt](mdc:src/main/kotlin/com/arteam/arLibs/command/ArLibsCommand.kt)
+
+### Config 开发模式
+配置类使用注解定义结构：
+
+```kotlin
+@Config(fileName = "config", comments = ["插件主配置文件"])
+class MainConfig {
+    
+    @ConfigValue(
+        path = "features.enabled",
+        defaultValue = "true",
+        comments = ["是否启用功能"]
+    )
+    var featuresEnabled: Boolean = true
+    
+    @ConfigField(path = "database", comments = ["数据库配置"])
+    class DatabaseConfig {
+        @ConfigValue(path = "host", defaultValue = "localhost")
+        var host: String = "localhost"
+    }
+}
+```
+
+**参考实现**: [CoreConfig.kt](mdc:src/main/kotlin/com/arteam/arLibs/config/CoreConfig.kt)
+
+## 系统集成模式
+
+### Action 系统集成
+创建自定义动作时遵循以下模式：
+
+```kotlin
+// 1. 实现 Action 接口
+class CustomAction(private val parameter: String) : Action {
+    override suspend fun execute(player: Player) {
+        // 动作逻辑实现
+    }
+    
+    override fun getType(): String = "custom"
+}
+
+// 2. 在 ActionParser 中注册
+// 在 parseAction 方法中添加新的 case
+```
+
+**参考文件**: [ActionParser.kt](mdc:src/main/kotlin/com/arteam/arLibs/action/ActionParser.kt)
+
+### Condition 系统集成
+创建自定义条件：
+
+```kotlin
+// 1. 实现 Condition 接口
+class CustomCondition(private val parameter: String) : Condition {
+    override fun evaluate(player: Player): Boolean {
+        // 条件评估逻辑
+        return true
+    }
+    
+    override fun getDescription(): String = "custom: $parameter"
+}
+
+// 2. 在 ConditionParser 中注册
+// 在 parse 方法中添加新的解析逻辑
+```
+
+**参考文件**: [ConditionParser.kt](mdc:src/main/kotlin/com/arteam/arLibs/condition/ConditionParser.kt)
+
+## 异步编程模式
+
+### Kotlin Coroutines
+ArLibs 广泛使用 Kotlin 协程处理异步操作：
+
+```kotlin
+// Action 执行是 suspend 函数
+class MyAction : Action {
+    override suspend fun execute(player: Player) {
+        // 可以使用 delay 等协程函数
+        delay(1000)
+        
+        // 主线程操作使用 suspendCancellableCoroutine
+        suspendCancellableCoroutine { continuation ->
+            Bukkit.getScheduler().runTask(plugin, Runnable {
+                // 主线程操作
+                continuation.resume(Unit)
+            })
+        }
+    }
+}
+```
+
+### 异步命令执行
+命令可以标记为异步执行：
+
+```kotlin
+@Command(async = true)
+class AsyncCommand : BaseCommand() {
+    override fun execute(context: CommandContext): CommandResult {
+        // 这个方法将在异步线程中执行
+        return CommandResult.SUCCESS
+    }
+}
+```
+
+## 错误处理模式
+
+### 统一日志记录
+使用 ArLibs 提供的 Logger：
+
+```kotlin
+import com.arteam.arLibs.utils.Logger
+
+// 不同级别的日志
+Logger.info("操作成功")
+Logger.warn("警告信息")
+Logger.severe("严重错误")
+Logger.debug("调试信息") // 只在调试模式下显示
+```
+
+### 异常处理
+```kotlin
+try {
+    // 可能出错的操作
+} catch (e: Exception) {
+    Logger.warn("操作失败: ${e.message}")
+    Logger.debug("详细错误: ${e.stackTraceToString()}")
+    return CommandResult.ERROR
+}
+```
+
+## 性能优化模式
+
+### 缓存使用
+```kotlin
+// Condition 系统内置缓存
+// 重复的条件表达式会被自动缓存
+
+// 手动管理缓存
+ConditionAPI.clearCache() // 在配置重载时清理缓存
+```
+
+### 异步执行
+```kotlin
+// Action 系统自动处理异步执行
+ActionAPI.executeActions(player, actions) { result ->
+    // 回调在主线程执行
+    Logger.info("执行完成: ${result.getSummary()}")
+}
+```
+
+## 扩展性设计模式
+
+### 工厂模式
+ArLibs 使用工厂模式创建组件：
+
+```kotlin
+// Parser 工厂模式示例
+object ActionParser {
+    fun parseAction(actionString: String): Action? {
+        return when (type) {
+            "tell" -> TellAction(value)
+            "sound" -> SoundAction.parse(value)
+            // 新类型在这里添加
+            else -> null
+        }
+    }
+}
+```
+
+### 策略模式
+条件系统使用策略模式：
+
+```kotlin
+// 不同的条件类型实现相同接口
+interface Condition {
+    fun evaluate(player: Player): Boolean
+    fun getDescription(): String
+}
+
+// 运行时选择策略
+val condition = ConditionParser.parse(expression)
+val result = condition?.evaluate(player) ?: false
+```
+
+## 代码组织模式
+
+### 模块化设计
+```
+src/main/kotlin/com/arteam/arLibs/
+├── action/           # Action 系统
+│   ├── Action.kt     # 核心接口
+│   ├── ActionAPI.kt  # 公共 API
+│   └── actions/      # 具体实现
+├── command/          # Command 系统
+├── condition/        # Condition 系统
+└── config/          # Config 系统
+```
+
+### API 层分离
+每个模块都有独立的 API 层：
+- **ActionAPI**: Action 系统的公共接口
+- **CommandAPI**: Command 系统的公共接口  
+- **ConditionAPI**: Condition 系统的公共接口
+- **ConfigAPI**: Config 系统的公共接口
+
+## 测试模式
+
+### 单元测试
+```kotlin
+// 测试条件评估
+@Test
+fun testPermissionCondition() {
+    val condition = PermissionCondition("test.permission")
+    val result = condition.evaluate(mockPlayer)
+    assertTrue(result)
+}
+```
+
+### 集成测试
+```kotlin
+// 测试完整的 Action 执行流程
+@Test
+fun testActionExecution() {
+    val job = ActionAPI.executeAction(player, "tell Hello!")
+    assertNotNull(job)
+}
+```
+
+## 安全考虑
+
+### 权限检查
+```kotlin
+// 命令权限检查
+@Permission("plugin.admin", defaultValue = PermissionDefault.OP)
+
+// 条件中的权限检查
+"permission admin.access"
+```
+
+### 输入验证
+```kotlin
+// 配置验证
+@ConfigValue(
+    path = "port",
+    defaultValue = "25565",
+    validator = RangeValidator::class // 自定义验证器
+)
+```
+
+这些模式确保了代码的一致性、可维护性和扩展性。

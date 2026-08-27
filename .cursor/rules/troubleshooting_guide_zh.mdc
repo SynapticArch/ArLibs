@@ -1,0 +1,321 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# ArLibs 故障排除指南
+
+本指南帮助解决在使用 ArLibs 框架时可能遇到的常见问题。
+
+## 常见问题排查
+
+### Action 系统问题
+
+#### 动作不执行
+**问题**: 动作字符串解析失败或不执行
+
+**排查步骤**:
+1. 检查动作语法是否正确
+```kotlin
+// 使用命令测试单个动作
+/arlibs action tell Hello, %player%!
+```
+
+2. 查看控制台日志
+```log
+[ArLibs] WARN: Failed to parse action: 'invalid_action_string'
+[ArLibs] DEBUG: Action execution completed: 1/1 successful (100.0%) in 5ms
+```
+
+3. 检查支持的动作类型
+```kotlin
+val supportedTypes = ActionAPI.getSupportedActionTypes()
+println(supportedTypes) // [tell, sound, title, actionbar, command, console, delay, conditional]
+```
+
+#### 条件动作问题
+**问题**: If-Then-Else 条件动作不按预期工作
+
+**常见原因**:
+- 条件表达式语法错误
+- 大括号不匹配
+- 分号分隔符使用错误
+
+**示例修复**:
+```yaml
+# 错误
+action: "if permission admin.access then tell Welcome!"
+
+# 正确
+action: "if {permission admin.access} then {tell Welcome!}"
+
+# 错误 - 缺少分号
+action: "if {permission admin} then {tell Hello sound DING-1.0-1.0}"
+
+# 正确
+action: "if {permission admin} then {tell Hello; sound DING-1.0-1.0}"
+```
+
+#### 音效不播放
+**问题**: SoundAction 不产生音效
+
+**排查步骤**:
+1. 检查音效名称是否有效
+```kotlin
+// 查看所有可用音效
+val sounds = SoundAction.getAvailableSounds()
+val commonSounds = SoundAction.getCommonSounds()
+```
+
+2. 检查音量和音调范围
+```yaml
+# 音量范围: 0.0 - 10.0
+# 音调范围: 0.5 - 2.0
+sound: "ENTITY_EXPERIENCE_ORB_PICKUP-1.0-1.0"  # 正确
+sound: "ENTITY_EXPERIENCE_ORB_PICKUP-15.0-5.0" # 会被限制到有效范围
+```
+
+### Condition 系统问题
+
+#### 条件评估错误
+**问题**: 条件表达式返回意外结果
+
+**排查步骤**:
+1. 验证条件语法
+```kotlin
+/arlibs condition permission admin.access
+/arlibs condition papi %player_level% >= 10
+```
+
+2. 检查 PlaceholderAPI 可用性
+```kotlin
+val isAvailable = ConditionAPI.isPlaceholderAPIAvailable()
+if (!isAvailable) {
+    Logger.warn("PlaceholderAPI not found - placeholder conditions will fail")
+}
+```
+
+3. 检查占位符值
+```kotlin
+// 手动测试占位符
+val value = PlaceholderAPI.setPlaceholders(player, "%player_level%")
+Logger.debug("Placeholder value: $value")
+```
+
+#### 复合条件问题
+**问题**: Any/All 条件不正确评估
+
+**常见错误**:
+```yaml
+# 错误 - 缺少方括号
+condition: "any permission admin; permission mod"
+
+# 正确
+condition: "any [permission admin; permission mod]"
+
+# 错误 - 条件格式不正确
+condition: "all [admin.access; level >= 10]"
+
+# 正确  
+condition: "all [permission admin.access; papi %player_level% >= 10]"
+```
+
+### Command 系统问题
+
+#### 命令注册失败
+**问题**: 命令类无法注册
+
+**常见原因**:
+1. 缺少 @Command 注解
+2. 没有继承 BaseCommand
+3. 没有无参构造函数
+
+**正确示例**:
+```kotlin
+@Command(name = "test")  // 必须有注解
+class TestCommand : BaseCommand() {  // 必须继承 BaseCommand
+    
+    // 必须有无参构造函数（默认提供）
+    
+    override fun execute(context: CommandContext): CommandResult {
+        return CommandResult.SUCCESS
+    }
+}
+```
+
+#### 子命令不工作
+**问题**: 子命令无法执行
+
+**检查清单**:
+```kotlin
+@SubCommand(name = "test")  // 注解正确
+fun testCommand(context: CommandContext): CommandResult {  // 参数类型正确
+    return CommandResult.SUCCESS  // 返回类型正确
+}
+```
+
+#### Tab 补全问题
+**问题**: Tab 补全不显示或显示错误
+
+**排查步骤**:
+```kotlin
+@TabComplete(subCommand = "test", argument = 0)  // 确保参数匹配
+fun testTabComplete(context: CommandContext): List<String> {
+    return listOf("option1", "option2")  // 返回 List<String>
+}
+```
+
+### Config 系统问题
+
+#### 配置加载失败
+**问题**: 配置文件无法加载或保存
+
+**排查步骤**:
+1. 检查注解配置
+```kotlin
+@Config(fileName = "config")  // 文件名不能为空
+class MyConfig {
+    @ConfigValue(path = "setting", defaultValue = "default")  // 路径不能为空
+    var setting: String = "default"
+}
+```
+
+2. 检查文件权限和路径
+```log
+[ArLibs] SEVERE: Failed to load config file: config.yml
+[ArLibs] ERROR: Permission denied writing to plugins/ArLibs/config.yml
+```
+
+#### 配置值不保存
+**问题**: 配置修改后不持久化
+
+**解决方法**:
+```kotlin
+// 修改配置后必须手动保存
+config.setting = "new value"
+ConfigManager.saveConfig(MyConfig::class)
+
+// 或者使用 API
+ConfigAPI.saveConfig(MyConfig::class)
+```
+
+## 调试技巧
+
+### 启用调试模式
+```kotlin
+// 通过命令启用
+/arlibs debug
+
+// 或在配置中设置
+debug: true
+```
+
+### 查看系统信息
+```kotlin
+// 查看总体信息
+/arlibs info
+
+// 查看注册的命令
+/arlibs commands
+
+// 查看指标统计
+val stats = ActionMetrics.getSystemStats()
+Logger.info(stats.getSummary())
+```
+
+### 日志分析
+**常见日志消息**:
+```log
+# 正常执行
+[ArLibs] DEBUG: Executing action 1/3: tell for player Steve
+[ArLibs] DEBUG: Action group execution completed for Steve. Success: 3, Failed: 0
+
+# 解析错误
+[ArLibs] WARN: Failed to parse action: 'invalid syntax'
+[ArLibs] WARN: Unknown action type: 'unknown'. Supported types: tell, sound, title...
+
+# 权限问题
+[ArLibs] DEBUG: Permission check failed for player Steve: admin.access
+
+# 占位符问题
+[ArLibs] WARN: PlaceholderAPI not available for placeholder conditions
+```
+
+## 性能问题
+
+### 缓存问题
+**问题**: 内存使用过高或性能下降
+
+**解决方法**:
+```kotlin
+// 定期清理条件缓存
+ConditionAPI.clearCache()
+
+// 检查缓存大小
+val cacheSize = ConditionAPI.getCacheSize()
+if (cacheSize > 1000) {
+    ConditionAPI.clearCache()
+}
+```
+
+### 异步执行问题
+**问题**: 主线程阻塞或异步操作失败
+
+**最佳实践**:
+```kotlin
+// 长时间运行的命令标记为异步
+@Command(async = true)
+class LongRunningCommand : BaseCommand()
+
+// Action 系统自动处理异步
+ActionAPI.executeActions(player, actions) { result ->
+    // 回调在主线程执行
+}
+```
+
+## 兼容性问题
+
+### Bukkit 版本兼容
+**问题**: 在某些 Bukkit 版本上功能异常
+
+**检查**:
+```kotlin
+val bukkitVersion = Bukkit.getBukkitVersion()
+val serverVersion = Bukkit.getVersion()
+Logger.info("Server: $serverVersion, Bukkit: $bukkitVersion")
+```
+
+### 插件冲突
+**问题**: 与其他插件产生冲突
+
+**排查步骤**:
+1. 检查命令冲突
+```kotlin
+/arlibs commands  // 查看已注册的命令
+```
+
+2. 检查依赖插件
+```yaml
+# 确保所需插件已安装并启用
+depend: [PlaceholderAPI]  # 如果使用占位符功能
+```
+
+## 获取帮助
+
+### 内置帮助系统
+```kotlin
+/arlibs help                    # 主帮助
+/arlibs help <subcommand>      # 子命令帮助
+/arlibs action help            # Action 格式帮助
+/arlibs condition help         # Condition 格式帮助
+```
+
+### 诊断信息收集
+在报告问题时，请提供以下信息：
+1. ArLibs 版本 (`/arlibs version`)
+2. 服务器版本和类型
+3. 相关的日志输出
+4. 问题复现步骤
+5. 使用的表达式或配置
+
+这些信息将帮助快速定位和解决问题。

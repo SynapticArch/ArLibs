@@ -28,6 +28,12 @@ dependencies {
     
     compileOnly("me.clip:placeholderapi:2.11.6")
 
+    // Database dependencies
+    implementation("com.zaxxer:HikariCP:6.3.0")
+    implementation("org.xerial:sqlite-jdbc:3.50.2.0")
+    implementation("mysql:mysql-connector-java:8.0.33")
+    implementation("org.slf4j:slf4j-api:2.0.12")
+
     constraints {
         implementation("com.google.guava:guava:33.4.8-jre") {
             because("CVE-2023-2976: Force Guava version to address vulnerability")

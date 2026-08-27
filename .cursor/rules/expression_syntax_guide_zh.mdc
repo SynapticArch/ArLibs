@@ -1,0 +1,255 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# ArLibs 表达式语法指南
+
+本指南详细介绍 ArLibs 中各种表达式的语法格式和使用方法。
+
+## Action 表达式语法
+
+### 基本动作格式
+所有动作遵循 `type value` 的基本格式：
+
+```yaml
+# 发送消息
+tell: "Hello, %player%!"
+tell: "&aWelcome to the server!"
+
+# 播放音效 (音效-音量-音调)
+sound: "ENTITY_EXPERIENCE_ORB_PICKUP-1.0-1.0"
+sound: "BLOCK_NOTE_BLOCK_PLING-0.5-2.0"
+
+# 执行命令 (作为玩家)
+command: "fly"
+command: "gamemode creative"
+
+# 控制台命令
+console: "give %player% diamond 1"
+console: "say %player% joined the server"
+
+# ActionBar 消息
+actionbar: "&eYour health: &c%player_health%"
+
+# 延迟 (tick数，20 ticks = 1秒)
+delay: "20"
+delay: "100"
+```
+
+### 标题动作语法
+标题使用特殊的反引号语法：
+
+```yaml
+# 格式: title `主标题` `副标题` fadeIn stay fadeOut
+title: "`&6Welcome` `&7Enjoy your stay` 10 70 20"
+title: "`&cWarning` `&7Check your inventory` 5 40 10"
+
+# 只有主标题
+title: "`&aSuccess!` `` 10 70 20"
+
+# 默认时间 (fadeIn=10, stay=70, fadeOut=20)
+title: "`Hello` `World`"
+```
+
+### 条件动作语法
+支持 If-Then-Else 逻辑：
+
+```yaml
+# 基本 If-Then
+action: "if {permission essentials.fly} then {tell You can fly!}"
+
+# If-Then-Else
+action: "if {permission admin.access} then {tell Welcome, admin!} else {tell Access denied!}"
+
+# 多个动作用分号分隔
+action: "if {papi %player_level% >= 10} then {tell Congratulations!; sound ENTITY_PLAYER_LEVELUP-1.0-1.0} else {tell You need level 10}"
+
+# 嵌套条件
+action: "if {permission vip.access} then {if {papi %player_gamemode% == SURVIVAL} then {command fly} else {tell Only in survival mode}}"
+```
+
+## Condition 表达式语法
+
+### 权限条件
+```yaml
+# 基本权限检查
+condition: "permission admin.access"
+condition: "perm vip.benefits"
+
+# 否定权限 (玩家没有该权限)
+condition: "permission !banned.user"
+condition: "perm !restricted.area"
+```
+
+### PlaceholderAPI 条件
+```yaml
+# 基本占位符检查 (占位符存在且非空)
+condition: "papi %player_name%"
+condition: "placeholder %vault_eco_balance%"
+
+# 数值比较
+condition: "papi %player_level% >= 10"
+condition: "papi %player_health% > 5.0"
+condition: "papi %vault_eco_balance% <= 1000"
+
+# 字符串比较
+condition: "papi %player_gamemode% == CREATIVE"
+condition: "papi %player_world% != nether"
+condition: "papi %essentials_afk% == true"
+```
+
+### 比较操作符
+支持以下比较操作符：
+
+```yaml
+# 数值比较
+condition: "papi %player_level% > 5"      # 大于
+condition: "papi %player_level% >= 10"    # 大于等于
+condition: "papi %player_level% < 50"     # 小于
+condition: "papi %player_level% <= 100"   # 小于等于
+condition: "papi %player_level% == 25"    # 等于
+condition: "papi %player_level% != 0"     # 不等于
+
+# 字符串比较 (按字典序)
+condition: "papi %player_name% == Steve"
+condition: "papi %player_world% != end"
+```
+
+### 复合条件语法
+
+#### Any 条件 (OR 逻辑)
+```yaml
+# 任一条件满足即为真
+condition: "any [permission admin.access; permission moderator.access]"
+condition: "any [papi %player_level% >= 50; permission vip.bypass]"
+
+# 可以嵌套
+condition: "any [permission admin.all; all [permission user.basic; papi %player_level% >= 10]]"
+```
+
+#### All 条件 (AND 逻辑)
+```yaml
+# 所有条件都必须满足
+condition: "all [permission user.basic; papi %player_level% >= 5]"
+condition: "all [permission build.access; papi %player_gamemode% == CREATIVE]"
+
+# 多个条件
+condition: "all [permission access.area; papi %player_level% >= 10; papi %vault_eco_balance% >= 100]"
+```
+
+#### Not 条件 (NOT 逻辑)
+```yaml
+# 条件不满足时为真
+condition: "not permission banned.user"
+condition: "not papi %player_gamemode% == SPECTATOR"
+
+# 可以否定复合条件
+condition: "not any [permission restricted.area; papi %player_level% < 5]"
+condition: "not all [permission temp.access; papi %essentials_afk% == true]"
+```
+
+### 嵌套条件示例
+```yaml
+# 复杂嵌套示例
+condition: "all [
+  permission user.verified;
+  any [
+    permission vip.access;
+    all [
+      papi %player_level% >= 20;
+      papi %vault_eco_balance% >= 5000
+    ]
+  ];
+  not permission banned.temporary
+]"
+```
+
+## 表达式中的占位符
+
+### 内置占位符
+```yaml
+# 玩家相关
+%player%        # 玩家名称
+%player_name%   # 玩家名称 (同上)
+%player_uuid%   # 玩家UUID
+
+# 在动作中使用
+action: "tell Hello, %player%!"
+action: "console give %player% diamond 1"
+```
+
+### PlaceholderAPI 占位符
+如果安装了 PlaceholderAPI，可以使用任何支持的占位符：
+
+```yaml
+# 经济
+%vault_eco_balance%
+%vault_eco_balance_formatted%
+
+# 等级
+%player_level%
+%player_exp%
+
+# 位置
+%player_world%
+%player_x%
+%player_y%
+%player_z%
+
+# 其他插件
+%essentials_afk%
+%essentials_godmode%
+%luckperms_prefix%
+```
+
+## 语法注意事项
+
+### 空格处理
+ArLibs 对空格处理较为宽松：
+
+```yaml
+# 这些都是有效的
+condition: "permission admin.access"
+condition: " permission  admin.access "
+condition: "permission    admin.access"
+
+# 条件表达式中的空格也会被标准化
+condition: "papi %player_level%>=10"
+condition: "papi %player_level% >= 10"
+condition: "papi %player_level%   >=   10"
+```
+
+### 特殊字符转义
+某些字符可能需要特殊处理：
+
+```yaml
+# 包含分号的文本需要在适当位置小心处理
+action: "tell Message with; semicolon"  # 正常工作
+
+# 包含大括号的文本
+action: "tell Use {curly braces} carefully"  # 正常工作，除非在条件动作中
+```
+
+### 大小写敏感性
+```yaml
+# 权限通常大小写敏感
+permission: "Admin.Access"  # 与 "admin.access" 不同
+
+# 操作符大小写不敏感
+condition: "papi %player_level% >= 10"  # 正确
+condition: "papi %player_level% GE 10"  # 错误
+
+# 占位符大小写敏感
+papi: "%Player_Level%"  # 可能无效，应该是 "%player_level%"
+```
+
+### 调试技巧
+```yaml
+# 使用 ArLibs 命令测试表达式
+/arlibs action tell Hello, %player%!
+/arlibs condition permission admin.access
+/arlibs condition papi %player_level% >= 10
+```
+
+这些语法规则确保了表达式的灵活性和强大功能，同时保持了良好的可读性。

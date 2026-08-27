@@ -1,0 +1,150 @@
+# ArLibs 简体中文语言文件
+
+# 通用消息
+general:
+  prefix: "&8[&bArLibs&8] &r"
+  reloading: "&7正在重新加载配置..."
+  reloaded: "&a配置重新加载成功！"
+  error: "&c发生错误: {error}"
+  no_permission: "&c您没有权限使用此命令。"
+  player_only: "&c此命令只能由玩家使用。"
+  console_only: "&c此命令只能从控制台使用。"
+
+# 命令消息
+command:
+  reload:
+    success: "&aArLibs 配置重新加载成功！"
+    debug_mode: "&7调试模式: &e{debug_status}"
+  debug:
+    enabled: "&a调试模式已启用"
+    disabled: "&c调试模式已禁用"
+  version:
+    title: "&bArLibs &7版本信息"
+    version: "&7版本: &e{version}"
+    author: "&7作者: &e{author}"
+    description: "&7一个强大的 Minecraft 插件开发库"
+    built_for: "&7构建目标: &eBukkit/Spigot/Paper"
+    api_version: "&7API 版本: &e{version}"
+    debug_info: "&7调试信息:"
+    plugin_file: "&7• 插件文件: &e{file}"
+    data_folder: "&7• 数据文件夹: &e{folder}"
+    loaded: "&7• 已加载: &e{status}"
+  about:
+    title: "&6=== &eArLibs 系统信息 &6==="
+    plugin_info: "&6插件信息:"
+    version: "&7• 版本: &e{version}"
+    authors: "&7• 作者: &e{authors}"
+    description: "&7• 描述: &e{description}"
+    server_info: "&6服务器信息:"
+    server: "&7• 服务器: &e{server}"
+    bukkit_version: "&7• Bukkit 版本: &e{version}"
+    online_players: "&7• 在线玩家: &e{online}/{max}"
+    command_system: "&6命令系统:"
+    total_commands: "&7• 已注册命令总数: &e{count}"
+    commands_by_plugin: "&7• 按插件分类的命令:"
+    plugin_command_count: "&7  - &e{plugin}&7: &a{count} 个命令"
+    config_status: "&6配置状态:"
+    debug_mode: "&7• 调试模式: &e{status}"
+    config_loaded: "&7• 配置加载: &a成功"
+    config_error: "&7• 配置状态: &c错误 - {error}"
+  features:
+    title: "功能特性"
+    commands: "基于注解的命令系统"
+    config: "高级配置管理"
+    colors: "颜色处理工具"
+    logging: "增强日志系统"
+  help:
+    usage: "使用 /arlibs help 查看可用命令"
+  action:
+    executing: "&6正在执行动作: &e{expression}"
+    success: "动作执行成功"
+    parse_error: "解析动作表达式失败"
+    execution_error: "执行动作失败: {error}"
+    help:
+      title: "&7支持的格式:"
+      tell: "&7• tell <消息>"
+      sound: "&7• sound <音效>-<音量>-<音调>"
+      if: "&7• if {条件} then {动作} [else {动作}]"
+      delay: "&7• delay <延迟>"
+      command: "&7• command <命令>"
+      console: "&7• console <命令>"
+      actionbar: "&7• actionbar <消息>"
+      title_format: "&7• title `<标题>` `<副标题>` <淡入> <停留> <淡出>"
+  commands:
+    no_commands: "当前没有通过 ArLibs 注册的命令"
+    no_commands_for_plugin: "未找到插件 {plugin} 的命令"
+    title_for_plugin: "&6=== &e{plugin} 的命令 &6==="
+    title_all: "&6=== &e所有已注册命令 &6==="
+    total: "&7总计: &e{count} 个命令"
+  condition:
+    evaluating: "&6正在评估条件: &e{expression}"
+    invalid_syntax: "条件语法无效"
+    result_true: "条件评估结果: &atrue"
+    result_false: "&6条件评估结果: &cfalse"
+    evaluation_error: "评估条件时出错: {error}"
+    help:
+      title: "&7支持的格式:"
+      permission: "&7• permission <权限节点>"
+      papi: "&7• papi <占位符> [操作符] [值]"
+      any: "&7• any [条件1; 条件2; ...]"
+      all: "&7• all [条件1; 条件2; ...]"
+      not: "&7• not <条件>"
+
+# 语言系统消息
+language:
+  not_supported: "&c不支持语言 '{language}'。"
+  set_success: "&a语言已设置为: {language}"
+  # 独立语言命令消息
+  command:
+    title: "&6语言设置"
+    available_title: "&7可用语言:"
+    usage: "&7用法: &e/language <语言>"
+    example: "&7示例: &e/language zh_cn"
+    language_format: "&7  {code} - {name}"
+    current_format: "&7  {code} - {name} &7(当前)"
+
+# 错误消息
+errors:
+  config_load: "加载配置失败: {error}"
+  config_save: "保存配置失败: {error}"
+  language_load: "加载语言文件失败: {error}"
+  command_execution: "执行命令失败: {error}"
+  invalid_usage: "命令用法无效。使用: {usage}"
+
+# 成功消息
+success:
+  config_saved: "配置保存成功！"
+  language_changed: "语言更改成功！"
+  command_executed: "命令执行成功！"
+
+# 帮助消息
+help:
+  title: "&bArLibs &7帮助"
+  available_commands: "&7可用命令:"
+  main_description: "一个强大的 Bukkit 插件开发库"
+  specific_help: "&7使用 &e/arlibs help <子命令名> &7查看具体帮助。"
+  command_title: "&6帮助: &e{command}"
+  description: "&7描述: &f{description}"
+  aliases: "&7别名: &f{aliases}"
+  permission: "&7权限: &f{permission}"
+  executor: "&7执行者: &f{executor}"
+  no_description: "暂无描述。"
+  reload: "&7/arlibs reload &8- &f重新加载配置"
+  debug: "&7/arlibs debug &8- &f切换调试模式"
+  version: "&7/arlibs version &8- &f显示版本信息"
+  action: "&7/arlibs action <表达式> &8- &f执行动作表达式"
+  condition: "&7/arlibs condition <表达式> &8- &f评估条件表达式"
+  info: "&7/arlibs info &8- &f显示详细系统信息"
+  commands: "&7/arlibs commands &8- &f列出所有已注册命令"
+  about: "&7/arlibs about &8- &f显示详细系统信息"
+  command: "&7/arlibs command &8- &f列出所有已注册命令"
+  subcommand:
+    help: "显示帮助信息和可用命令"
+    info: "显示详细的 ArLibs 系统信息"
+    commands: "列出通过 ArLibs 注册的所有命令"
+    reload: "重新加载 ArLibs 配置"
+    debug: "切换调试模式开关"
+    version: "显示 ArLibs 版本信息"
+    action: "直接执行动作表达式"
+    condition: "直接评估条件表达式"
+    about: "显示详细的 ArLibs 系统信息" 

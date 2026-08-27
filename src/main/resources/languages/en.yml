@@ -1,0 +1,152 @@
+# ArLibs English Language File
+
+# General messages
+general:
+  prefix: "&8[&bArLibs&8] &r"
+  reloading: "&7Reloading configuration..."
+  reloaded: "&aConfiguration reloaded successfully!"
+  error: "&cAn error occurred: {error}"
+  no_permission: "&cYou don't have permission to use this command."
+  player_only: "&cThis command can only be used by players."
+  console_only: "&cThis command can only be used from console."
+
+# Command messages
+command:
+  reload:
+    success: "&aArLibs configuration reloaded successfully!"
+    debug_mode: "&7Debug Mode: &e{debug_status}"
+  debug:
+    enabled: "&aDebug mode enabled"
+    disabled: "&cDebug mode disabled"
+  version:
+    title: "&6ArLibs Framework"
+    version: "&7Version: &e{version}"
+    author: "&7Author(s): &e{author}"
+    description: "&7A powerful library for Minecraft plugin development"
+    built_for: "&7Built for: &eBukkit/Spigot/Paper"
+    api_version: "&7API Version: &e{version}"
+    debug_info: "&7Debug Information:"
+    plugin_file: "&7• Plugin File: &e{file}"
+    data_folder: "&7• Data Folder: &e{folder}"
+    loaded: "&7• Loaded: &e{status}"
+  about:
+    title: "&6=== &eArLibs System Information &6==="
+    plugin_info: "&6Plugin Information:"
+    version: "&7• Version: &e{version}"
+    authors: "&7• Authors: &e{authors}"
+    description: "&7• Description: &e{description}"
+    server_info: "&6Server Information:"
+    server: "&7• Server: &e{server}"
+    bukkit_version: "&7• Bukkit Version: &e{version}"
+    online_players: "&7• Online Players: &e{online}/{max}"
+    command_system: "&6Command System:"
+    total_commands: "&7• Total Registered Commands: &e{count}"
+    commands_by_plugin: "&7• Commands by Plugin:"
+    plugin_command_count: "&7  - &e{plugin}&7: &a{count} command(s)"
+    config_status: "&6Configuration Status:"
+    debug_mode: "&7• Debug Mode: &e{status}"
+    config_loaded: "&7• Config Loaded: &aSuccessfully"
+    config_error: "&7• Config Status: &cError - {error}"
+  features:
+    title: "Features"
+    commands: "Annotation-based command system"
+    config: "Advanced configuration management"
+    colors: "Color processing utilities"
+    logging: "Enhanced logging system"
+  help:
+    usage: "Use /arlibs help for available commands"
+  action:
+    executing: "&6Executing action: &e{expression}"
+    success: "Action executed successfully"
+    parse_error: "Failed to parse action expression"
+    execution_error: "Failed to execute action: {error}"
+    no_expression: "Please provide an action expression"
+    help:
+      title: "&7Supported formats:"
+      tell: "&7• tell <message>"
+      sound: "&7• sound <sound>-<volume>-<pitch>"
+      if: "&7• if {condition} then {actions} [else {actions}]"
+      delay: "&7• delay <ticks>"
+      command: "&7• command <command>"
+      console: "&7• console <command>"
+      actionbar: "&7• actionbar <message>"
+      title_format: "&7• title `<title>` `<subtitle>` <fadeIn> <stay> <fadeOut>"
+  commands:
+    no_commands: "No commands are currently registered through ArLibs"
+    no_commands_for_plugin: "No commands found for plugin: {plugin}"
+    title_for_plugin: "&6=== &eCommands for {plugin} &6==="
+    title_all: "&6=== &eAll Registered Commands &6==="
+    total: "&7Total: &e{count} command(s)"
+  condition:
+    evaluating: "&6Evaluating condition: &e{expression}"
+    invalid_syntax: "Invalid condition syntax"
+    result_true: "Condition evaluated to: &atrue"
+    result_false: "&6Condition evaluated to: &cfalse"
+    evaluation_error: "Error evaluating condition: {error}"
+    help:
+      title: "&7Supported formats:"
+      permission: "&7• permission <node>"
+      papi: "&7• papi <placeholder> [operator] [value]"
+      any: "&7• any [condition1; condition2; ...]"
+      all: "&7• all [condition1; condition2; ...]"
+      not: "&7• not <condition>"
+
+# Language system messages
+language:
+  not_supported: "&cLanguage '{language}' is not supported."
+  set_success: "&aLanguage set to: {language}"
+  # Independent language command messages
+  command:
+    title: "&6Language Settings"
+    available_title: "&7Available languages:"
+    usage: "&7Usage: &e/language <language>"
+    example: "&7Example: &e/language zh_cn"
+    language_format: "&7  {code} - {name}"
+    current_format: "&7  {code} - {name} &7(current)"
+
+# Error messages
+errors:
+  config_load: "Failed to load configuration: {error}"
+  config_save: "Failed to save configuration: {error}"
+  language_load: "Failed to load language file: {error}"
+  command_execution: "Failed to execute command: {error}"
+  invalid_usage: "Invalid command usage. Use: {usage}"
+
+# Success messages
+success:
+  config_saved: "Configuration saved successfully!"
+  language_changed: "Language changed successfully!"
+  command_executed: "Command executed successfully!"
+
+# Help messages
+# 帮助消息
+help:
+  title: "&bArLibs &7Help"
+  available_commands: "&7Available commands:"
+  main_description: "A powerful library for Bukkit plugins"
+  specific_help: "&7Use &e/arlibs help <subcommand_name> &7for specific help."
+  command_title: "&6Help: &e{command}"
+  description: "&7Description: &f{description}"
+  aliases: "&7Aliases: &f{aliases}"
+  permission: "&7Permission: &f{permission}"
+  executor: "&7Executor: &f{executor}"
+  no_description: "No description available."
+  reload: "&7/arlibs reload &8- &fReload configuration"
+  debug: "&7/arlibs debug &8- &fToggle debug mode"
+  version: "&7/arlibs version &8- &fShow version information"
+  action: "&7/arlibs action <expression> &8- &fExecute action expressions"
+  condition: "&7/arlibs condition <expression> &8- &fEvaluate condition expressions"
+  info: "&7/arlibs info &8- &fShow detailed system information"
+  commands: "&7/arlibs commands &8- &fList all registered commands"
+  about: "&7/arlibs about &8- &fShow detailed system information"
+  command: "&7/arlibs command &8- &fList all registered commands"
+  subcommand:
+    help: "Show help information and available commands"
+    info: "Show detailed ArLibs system information"
+    commands: "List all commands registered through ArLibs"
+    reload: "Reload ArLibs configuration"
+    debug: "Toggle debug mode on/off"
+    version: "Show ArLibs version information"
+    action: "Execute action expressions directly"
+    condition: "Evaluate condition expressions directly"
+    about: "Show detailed ArLibs system information" 

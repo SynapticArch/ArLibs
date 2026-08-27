@@ -10,16 +10,47 @@ alwaysApply: true
 ## 核心目录
 
 *   `src/main/kotlin/com/arteam/arLibs/`: 这是项目主要的 Kotlin 源代码存放位置。
-    *   `api/`: 存放暴露给其他插件使用的 API 接口。
-    *   `internal/`: 存放项目内部实现，不建议外部直接依赖。
-    *   `core/`: 存放核心功能模块。
-    *   `utils/`: 存放工具类。
-    *   `ArLibs.kt`: 插件主类或核心初始化类。
+    *   `action/`: Action系统模块，处理动作执行
+        *   [Action.kt](mdc:src/main/kotlin/com/arteam/arLibs/action/Action.kt): 动作基础接口
+        *   [ActionAPI.kt](mdc:src/main/kotlin/com/arteam/arLibs/action/ActionAPI.kt): Action系统公共API
+        *   [ActionParser.kt](mdc:src/main/kotlin/com/arteam/arLibs/action/ActionParser.kt): 动作字符串解析器
+        *   [ActionGroup.kt](mdc:src/main/kotlin/com/arteam/arLibs/action/ActionGroup.kt): 动作组管理
+        *   [ActionMetrics.kt](mdc:src/main/kotlin/com/arteam/arLibs/action/ActionMetrics.kt): 动作执行指标统计
+        *   [ConditionalActionParser.kt](mdc:src/main/kotlin/com/arteam/arLibs/action/ConditionalActionParser.kt): 条件动作解析器
+        *   `actions/`: 具体动作实现
+    *   `command/`: 命令系统模块，基于注解的命令框架
+        *   [BaseCommand.kt](mdc:src/main/kotlin/com/arteam/arLibs/command/BaseCommand.kt): 命令基类
+        *   [CommandAPI.kt](mdc:src/main/kotlin/com/arteam/arLibs/command/CommandAPI.kt): 命令系统公共API
+        *   [CommandManager.kt](mdc:src/main/kotlin/com/arteam/arLibs/command/CommandManager.kt): 命令管理器
+        *   [CommandContext.kt](mdc:src/main/kotlin/com/arteam/arLibs/command/CommandContext.kt): 命令执行上下文
+        *   [ArLibsCommand.kt](mdc:src/main/kotlin/com/arteam/arLibs/command/ArLibsCommand.kt): ArLibs主命令实现
+        *   `annotations/`: 命令注解定义
+    *   `condition/`: 条件系统模块，处理条件评估
+        *   [Condition.kt](mdc:src/main/kotlin/com/arteam/arLibs/condition/Condition.kt): 条件基础接口
+        *   [ConditionAPI.kt](mdc:src/main/kotlin/com/arteam/arLibs/condition/ConditionAPI.kt): 条件系统公共API
+        *   [ConditionParser.kt](mdc:src/main/kotlin/com/arteam/arLibs/condition/ConditionParser.kt): 条件表达式解析器
+        *   [ConditionManager.kt](mdc:src/main/kotlin/com/arteam/arLibs/condition/ConditionManager.kt): 条件管理器
+        *   [ComparisonOperator.kt](mdc:src/main/kotlin/com/arteam/arLibs/condition/ComparisonOperator.kt): 比较操作符
+        *   `conditions/`: 具体条件实现
+    *   `config/`: 配置系统模块，基于注解的配置管理
+        *   [ConfigAPI.kt](mdc:src/main/kotlin/com/arteam/arLibs/config/ConfigAPI.kt): 配置系统公共API
+        *   [ConfigManager.kt](mdc:src/main/kotlin/com/arteam/arLibs/config/ConfigManager.kt): 配置管理器
+        *   [CoreConfig.kt](mdc:src/main/kotlin/com/arteam/arLibs/config/CoreConfig.kt): 核心配置类
+        *   [ConfigCommentProcessor.kt](mdc:src/main/kotlin/com/arteam/arLibs/config/ConfigCommentProcessor.kt): 配置注释处理器
+        *   `annotations/`: 配置注解定义
+        *   `validation/`: 配置验证器
+    *   `language/`: 语言系统模块，处理国际化和本地化
+        *   [LanguageAPI.kt](mdc:src/main/kotlin/com/arteam/arLibs/language/LanguageAPI.kt): 语言系统公共API
+        *   [LanguageManager.kt](mdc:src/main/kotlin/com/arteam/arLibs/language/LanguageManager.kt): 语言管理器
+        *   [LanguageConfig.kt](mdc:src/main/kotlin/com/arteam/arLibs/language/LanguageConfig.kt): 语言配置类
+        *   [MessageFormatter.kt](mdc:src/main/kotlin/com/arteam/arLibs/language/MessageFormatter.kt): 消息格式化器
+    *   `utils/`: 工具类模块
+    *   [ArLibs.kt](mdc:src/main/kotlin/com/arteam/arLibs/ArLibs.kt): 插件主类
 *   `src/main/resources/`: 存放项目的资源文件，例如 `plugin.yml` (Bukkit/Spigot/Paper 插件描述文件), 配置文件模板等。
-*   `.github/`: 存放 GitHub 相关配置。
-    *   `workflows/`: 包含 GitHub Actions 工作流，例如 [build.yml](mdc:.github/workflows/build.yml) 用于自动化构建。
-    *   `ISSUE_TEMPLATE/`: 包含问题报告模板，如 [bug_report.md](mdc:.github/ISSUE_TEMPLATE/bug_report.md) 和 [feature_request.md](mdc:.github/ISSUE_TEMPLATE/feature_request.md)。
-    *   [PULL_REQUEST_TEMPLATE.md](mdc:.github/PULL_REQUEST_TEMPLATE.md): Pull Request 模板。
+    *   `languages/`: 语言文件目录
+        *   `en.yml`: 英文语言文件
+        *   `zh_cn.yml`: 简体中文语言文件
+        *   `zh_tw.yml`: 繁体中文语言文件
 
 ## 重要文件
 
@@ -30,9 +61,46 @@ alwaysApply: true
 *   [LICENSE](mdc:LICENSE): 项目的开源许可证文件。
 *   [CONTRIBUTING.md](mdc:CONTRIBUTING.md): 项目贡献指南。
 
+## 模块架构
+
+### Action系统
+负责处理各种动作的执行，支持条件动作、延迟动作等复杂场景。
+- **核心组件**: [ActionAPI.kt](mdc:src/main/kotlin/com/arteam/arLibs/action/ActionAPI.kt) 提供外部API
+- **解析器**: [ActionParser.kt](mdc:src/main/kotlin/com/arteam/arLibs/action/ActionParser.kt) 处理动作字符串解析
+- **条件支持**: [ConditionalActionParser.kt](mdc:src/main/kotlin/com/arteam/arLibs/action/ConditionalActionParser.kt) 处理If-Then-Else逻辑
+
+### Command系统
+基于注解的命令框架，支持子命令、权限管理、Tab补全等功能。
+- **核心组件**: [CommandManager.kt](mdc:src/main/kotlin/com/arteam/arLibs/command/CommandManager.kt) 管理命令注册和执行
+- **基类**: [BaseCommand.kt](mdc:src/main/kotlin/com/arteam/arLibs/command/BaseCommand.kt) 提供命令实现基础
+- **注解系统**: `annotations/` 目录定义命令相关注解
+
+### Condition系统
+处理各种条件评估，支持权限、占位符、复合条件等。
+- **核心组件**: [ConditionManager.kt](mdc:src/main/kotlin/com/arteam/arLibs/condition/ConditionManager.kt) 管理条件评估和缓存
+- **解析器**: [ConditionParser.kt](mdc:src/main/kotlin/com/arteam/arLibs/condition/ConditionParser.kt) 处理条件表达式解析
+- **操作符**: [ComparisonOperator.kt](mdc:src/main/kotlin/com/arteam/arLibs/condition/ComparisonOperator.kt) 定义比较操作
+
+### Config系统
+基于注解的配置管理，支持自动加载、保存、验证等功能。
+- **核心组件**: [ConfigManager.kt](mdc:src/main/kotlin/com/arteam/arLibs/config/ConfigManager.kt) 管理配置生命周期
+- **注释处理**: [ConfigCommentProcessor.kt](mdc:src/main/kotlin/com/arteam/arLibs/config/ConfigCommentProcessor.kt) 处理配置文件注释
+- **注解系统**: `annotations/` 目录定义配置相关注解
+
+### Language系统
+处理国际化和本地化，支持多语言消息、占位符替换、复数形式等。
+- **核心组件**: [LanguageAPI.kt](mdc:src/main/kotlin/com/arteam/arLibs/language/LanguageAPI.kt) 提供外部API
+- **管理器**: [LanguageManager.kt](mdc:src/main/kotlin/com/arteam/arLibs/language/LanguageManager.kt) 管理语言文件加载和缓存
+- **格式化器**: [MessageFormatter.kt](mdc:src/main/kotlin/com/arteam/arLibs/language/MessageFormatter.kt) 处理消息格式化和占位符替换
+- **配置**: [LanguageConfig.kt](mdc:src/main/kotlin/com/arteam/arLibs/language/LanguageConfig.kt) 定义语言系统配置
+
 ## 导航提示
 
 *   当需要理解项目如何构建时，请查阅 [build.gradle.kts](mdc:build.gradle.kts)。
-*   当需要了解插件的主要功能入口时，请查找 `src/main/kotlin/com/arteam/arLibs/` 下的主类 (例如 `ArLibs.kt` 或类似的名称)。
+*   当需要了解插件的主要功能入口时，请查看 [ArLibs.kt](mdc:src/main/kotlin/com/arteam/arLibs/ArLibs.kt)。
 *   当需要添加新的依赖库时，请修改 [build.gradle.kts](mdc:build.gradle.kts) 中的 `dependencies` 部分。
+*   当需要扩展Action系统时，实现 [Action.kt](mdc:src/main/kotlin/com/arteam/arLibs/action/Action.kt) 接口并在 [ActionParser.kt](mdc:src/main/kotlin/com/arteam/arLibs/action/ActionParser.kt) 中注册。
+*   当需要创建新的命令时，继承 [BaseCommand.kt](mdc:src/main/kotlin/com/arteam/arLibs/command/BaseCommand.kt) 并使用注解系统。
+*   当需要添加新的条件类型时，实现 [Condition.kt](mdc:src/main/kotlin/com/arteam/arLibs/condition/Condition.kt) 接口并在 [ConditionParser.kt](mdc:src/main/kotlin/com/arteam/arLibs/condition/ConditionParser.kt) 中注册。
+*   当需要处理多语言支持时，使用 [LanguageAPI.kt](mdc:src/main/kotlin/com/arteam/arLibs/language/LanguageAPI.kt) 获取消息，通过 [MessageFormatter.kt](mdc:src/main/kotlin/com/arteam/arLibs/language/MessageFormatter.kt) 格式化。
 

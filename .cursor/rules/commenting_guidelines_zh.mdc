@@ -18,66 +18,52 @@ alwaysApply: true
 1.  **文件头部注释 (File Headers)**
     *   **强制要求**: 必须包含文件版权声明、作者信息、创建日期以及文件简要描述。
     *   **语言**: 英文在前，中文在后。中英文之间用空行隔开。
-    *   **示例**:
+    *   **示例** (参考 [Action.kt](mdc:src/main/kotlin/com/arteam/arLibs/action/Action.kt)):
         ```kotlin
         /**
-         * English description of the file, explaining its main purpose and functionality.
-         * For example, this file contains utility functions for string manipulation.
+         * Base interface for all actions that can be executed.
+         * This interface defines the contract for action execution.
          *
-         * 中文描述文件，解释其主要目的和功能。
-         * 例如，此文件包含用于字符串操作的实用函数。
+         * 所有可执行动作的基础接口。
+         * 此接口定义了动作执行的契约。
          *
-         * @author YourName
-         * @since YYYY-MM-DD
+         * @author ArteamTech
+         * @since 2025-06-01
          * @version 1.0.0
          */
-        package com.arteam.arLibs.utils
-        // ... rest of the file content
+        package com.arteam.arLibs.action
         ```
 
 2.  **文档注释 (KDoc / Javadoc)**
     *   **适用范围**: 公共类 (public class), 公共方法 (public method), 公共属性 (public property), 以及其他需要外部理解的API。
     *   **语言**: 英文在前，中文在后。中英文描述块各自独立，可以使用 `@param`, `@return`, `@throws` 等标签分别用英文和中文解释。
-    *   **示例**:
+    *   **示例** (参考 [ActionAPI.kt](mdc:src/main/kotlin/com/arteam/arLibs/action/ActionAPI.kt)):
         ```kotlin
         /**
-         * English description of the function. Explains what it does, its parameters, and what it returns.
-         * This function concatenates two strings with a specified delimiter.
+         * Executes a single action for a player.
+         * 为玩家执行单个动作。
          *
-         * 中文函数描述。解释它的功能、参数和返回值。
-         * 此函数使用指定的分隔符连接两个字符串。
-         *
-         * @param str1 The first string.
-         *             第一个字符串。
-         * @param str2 The second string.
-         *             第一个字符串。
-         * @param delimiter The delimiter to use between the two strings.
-         *                  两个字符串之间使用的分隔符。
-         * @return The concatenated string.
-         *         连接后的字符串。
-         * @throws IllegalArgumentException if any input string is null.
-         *                                  如果任何输入字符串为 null。
+         * @param player The player to execute the action for.
+         *               要执行动作的玩家。
+         * @param actionString The action string to parse and execute.
+         *                     要解析和执行的动作字符串。
+         * @return A Job that can be used to cancel the execution, or null if parsing failed.
+         *         可用于取消执行的Job，如果解析失败则返回null。
          */
-        fun concatenateStrings(str1: String?, str2: String?, delimiter: String): String {
-            if (str1 == null || str2 == null) {
-                throw IllegalArgumentException("Input strings cannot be null.") // English only for inline/less important
-            }
-            return str1 + delimiter + str2
-        }
+        fun executeAction(player: Player, actionString: String): Job?
         ```
 
 3.  **重要代码块注释**
     *   **适用范围**: 复杂的逻辑、算法实现、重要的业务规则或需要特别注意的代码段。
     *   **语言**: 英文在前，中文在后。可以采用块注释或多行单行注释的形式。
-    *   **示例**:
+    *   **示例** (参考 [ActionGroup.kt](mdc:src/main/kotlin/com/arteam/arLibs/action/ActionGroup.kt)):
         ```kotlin
-        // English: Initialize the connection pool with specific configurations.
-        // This is critical for performance under high load.
-        // 中文：使用特定配置初始化连接池。
-        // 这对于高负载下的性能至关重要。
-        val poolConfig = PoolConfig()
-        poolConfig.maxSize = 100
-        // ... other configurations
+        // Check if the player is still online before executing each action
+        // 在执行每个动作前检查玩家是否仍在线
+        if (!player.isOnline) {
+            Logger.debug("Player ${player.name} is no longer online, stopping action execution at index $index")
+            break
+        }
         ```
 
 4.  **单行注释或相对不重要的注释**
@@ -93,7 +79,154 @@ alwaysApply: true
         }
         ```
 
+## 特定类型注释规范
+
+### API 类注释
+API 类需要详细的使用说明和示例，参考 [ActionAPI.kt](mdc:src/main/kotlin/com/arteam/arLibs/action/ActionAPI.kt):
+
+```kotlin
+/**
+ * Public API for executing actions and action groups.
+ * 用于执行动作和动作组的公共API。
+ */
+@Suppress("unused")
+object ActionAPI {
+    // ...
+}
+```
+
+### 注解类注释
+注解类需要明确说明用途和参数，参考 [Command.kt](mdc:src/main/kotlin/com/arteam/arLibs/command/annotations/Command.kt):
+
+```kotlin
+/**
+ * Main command annotation for defining command properties.
+ * 主命令注解，用于定义命令属性。
+ *
+ * @param name The name of the command. If empty, use the class name in lowercase.
+ *             命令的名称。如果为空，使用小写的类名。
+ * @param aliases Alternative names for the command.
+ *                命令的别名。
+ */
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class Command(
+    val name: String = "",
+    val aliases: Array<String> = []
+    // ...
+)
+```
+
+### 接口方法注释
+接口方法需要详细说明契约，参考 [Condition.kt](mdc:src/main/kotlin/com/arteam/arLibs/condition/Condition.kt):
+
+```kotlin
+/**
+ * Evaluates the condition for the given player.
+ * Returns true if the player meets the condition, false otherwise.
+ *
+ * 为给定玩家评估条件。
+ * 如果玩家满足条件则返回true，否则返回false。
+ *
+ * @param player The player to evaluate the condition for.
+ *               要评估条件的玩家。
+ * @return True if the condition is met, false otherwise.
+ *         如果满足条件则返回true，否则返回false。
+ */
+fun evaluate(player: Player): Boolean
+```
+
+### 复杂算法注释
+对于复杂的解析逻辑，参考 [ConditionalActionParser.kt](mdc:src/main/kotlin/com/arteam/arLibs/action/ConditionalActionParser.kt):
+
+```kotlin
+/**
+ * Finds a keyword in the string, considering brace nesting.
+ * 在字符串中查找关键字，考虑大括号嵌套。
+ *
+ * @param text The text to search in.
+ *             要搜索的文本。
+ * @param keyword The keyword to find.
+ *                要查找的关键字。
+ * @param startIndex The index to start searching from.
+ *                   开始搜索的索引。
+ * @return The index of the keyword, or -1 if not found.
+ *         关键字的索引，如果未找到则返回-1。
+ */
+private fun findKeyword(text: String, keyword: String, startIndex: Int): Int
+```
+
+## 异步和协程相关注释
+
+对于使用 Kotlin 协程的代码，需要特别说明：
+
+```kotlin
+/**
+ * Executes all actions in this group for the specified player.
+ * Uses coroutines for proper async handling and delay support.
+ * 
+ * 为指定玩家执行此组中的所有动作。
+ * 使用协程以正确处理异步和延迟支持。
+ *
+ * @param player The player to execute actions for.
+ *               要执行动作的玩家。
+ * @return ExecutionResult containing statistics about the execution.
+ *         包含执行统计信息的执行结果。
+ */
+suspend fun execute(player: Player): ExecutionResult
+```
+
+## 错误处理注释
+
+对于错误处理代码，需要说明异常情况：
+
+```kotlin
+try {
+    action.execute(player)
+    successCount++
+} catch (e: Exception) {
+    failureCount++
+    val errorMsg = "Failed to execute action ${action.getType()}: ${e.message}"
+    errors.add(errorMsg)
+    Logger.warn(errorMsg)
+    Logger.debug("Stack trace: ${e.stackTraceToString()}")
+}
+```
+
+## 性能相关注释
+
+对于性能敏感的代码，需要说明优化考虑：
+
+```kotlin
+// Cache for parsed conditions to avoid reparsing
+// 缓存解析的条件以避免重复解析
+private val conditionCache = ConcurrentHashMap<String, Condition?>()
+```
+
+## Suppress 注解的使用
+
+当使用 `@Suppress` 注解时，应该添加简短说明：
+
+```kotlin
+@Suppress("unused") // API class, used by external plugins
+object ActionAPI {
+    // ...
+}
+
+@Suppress("UNCHECKED_CAST") // Safe cast, method signature guarantees type
+val result = method.invoke(instance, context) as CommandResult
+```
+
 ## KtLint 与格式化
 
 *   虽然本规范定义了注释内容和语言，代码的整体格式应遵循项目配置的 KtLint 规则。
-*   注释的排版也应清晰易读
+*   注释的排版也应清晰易读，避免过长的行。
+*   使用 IDE 的格式化功能保持一致的注释格式。
+
+## 注释最佳实践
+
+1. **保持同步**: 代码修改时必须同步更新注释
+2. **避免冗余**: 不要注释显而易见的代码
+3. **解释意图**: 重点说明"为什么"而不是"是什么"
+4. **使用示例**: 对于复杂的API，提供使用示例
+5. **标记TODO**: 临时代码或未完成功能使用TODO标记

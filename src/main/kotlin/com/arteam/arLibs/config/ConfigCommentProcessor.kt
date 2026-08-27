@@ -88,11 +88,17 @@ class ConfigCommentProcessor {
         private fun processComments(configClass: KClass<*>, content: MutableList<String>): List<String> {
             val result = mutableListOf<String>()
             
-            // Add file header comments if any
+            // Add file header comments if any (only if not already present)
             configClass.findAnnotation<Config>()?.let { configAnnotation ->
                 if (configAnnotation.comments.isNotEmpty()) {
-                    configAnnotation.comments.forEach { result.add("# $it") }
-                    result.add("")
+                    // Check if header comments are already present
+                    val hasHeaderComments = content.take(5).any { it.trim().startsWith("#") && 
+                        configAnnotation.comments.any { comment -> it.contains(comment) } }
+                    
+                    if (!hasHeaderComments) {
+                        configAnnotation.comments.forEach { result.add("# $it") }
+                        result.add("")
+                    }
                 }
             }
             
@@ -136,14 +142,23 @@ class ConfigCommentProcessor {
                             }
                         }
                         
-                        pathComments[currentPath]?.forEach { comment ->
-                            result.add("${indent}# $comment")
+                        // Check if comments for this path are already present in the previous lines
+                        val commentsForPath = pathComments[currentPath]
+                        if (commentsForPath != null) {
+                            val hasComments = lineIndex > 0 && content[lineIndex - 1].trim().startsWith("#") &&
+                                commentsForPath.any { comment -> content[lineIndex - 1].contains(comment) }
+                            
+                            if (!hasComments) {
+                                commentsForPath.forEach { comment ->
+                                    result.add("${indent}# $comment")
+                                }
+                            }
                         }
                     }
                 }
                 result.add(line)
                 
-                // Add blank line after key-value pairs
+                // Add blank line after key-value pairs (only if not already present)
                 if (trimmedLine.isNotEmpty() && !trimmedLine.startsWith("#") && colonIndex > 0 && !trimmedLine.endsWith(":")) {
                     val nextLineIndex = lineIndex + 1
                     if (nextLineIndex < content.size) {
